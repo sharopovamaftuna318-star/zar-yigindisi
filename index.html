@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zar Yig'indisi Laboratoriyasi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f6f5f1;
+  --panel: #ffffff;
+  --ink: #1d232b;
+  --muted: #5f6b78;
+  --line: #e2dfd6;
+  --grid: #ecebe5;
+  --accent: #2456a6;
+  --accent-soft: #dfe8f6;
+  --hl: #c8572b;
+  --hl-soft: #f8e4da;
+  --ok: #2f7d4f;
+  --bar: #9db4d8;
+  --die: #fffdf8;
+  --pip: #1d232b;
+  --shadow: 0 1px 2px rgba(20, 30, 40, .06), 0 4px 16px rgba(20, 30, 40, .05);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161b; --panel: #1a2027; --ink: #e6e9ed; --muted: #95a1ae;
+    --line: #2c343e; --grid: #242b34; --accent: #7aa7ec; --accent-soft: #22324a;
+    --hl: #f08a5d; --hl-soft: #3d2a22; --ok: #6cc08f; --bar: #3f5c86;
+    --die: #edeae2; --pip: #1b1f24;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161b; --panel: #1a2027; --ink: #e6e9ed; --muted: #95a1ae;
+  --line: #2c343e; --grid: #242b34; --accent: #7aa7ec; --accent-soft: #22324a;
+  --hl: #f08a5d; --hl-soft: #3d2a22; --ok: #6cc08f; --bar: #3f5c86;
+  --die: #edeae2; --pip: #1b1f24;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+@media (prefers-reduced-motion: reduce) { .die.spin { animation: none; } }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; font-size: 15px; line-height: 1.55;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.kpi .v, .steps, table.dist, .stats dd { font-variant-numeric: tabular-nums; }
+h1 { text-wrap: balance; }
+.mono { font-family: "IBM Plex Mono", Consolas, "Courier New", monospace; }
+header { border-bottom: 1px solid var(--line); padding-bottom: 22px; margin-bottom: 26px; }
+.eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+h1 { font-family: "IBM Plex Serif", Georgia, serif; font-weight: 600; font-size: clamp(26px, 4vw, 38px); margin: 6px 0 8px; line-height: 1.15; }
+.lede { color: var(--muted); max-width: 760px; margin: 0; }
+h2 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; font-weight: 600; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); }
+.grid { display: grid; gap: 18px; }
+.top { grid-template-columns: minmax(280px, 360px) 1fr; }
+@media (max-width: 860px) { .top { grid-template-columns: 1fr; } }
+.two { grid-template-columns: 1fr 1fr; }
+@media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
+section { margin-top: 18px; }
+
+/* Boshqaruv */
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { flex: 1; border: 0; background: transparent; color: var(--ink); padding: 8px 0; font: inherit; cursor: pointer; border-right: 1px solid var(--line); }
+.seg button:last-child { border-right: 0; }
+.seg button.on { background: var(--accent); color: #fff; font-weight: 600; }
+.sumrow { display: flex; gap: 10px; align-items: center; }
+.sumrow input[type=number] {
+  width: 84px; font: 600 22px "IBM Plex Mono", Consolas, monospace; padding: 6px 8px; text-align: center;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink);
+}
+.sumrow input[type=range] { flex: 1; accent-color: var(--accent); }
+.range-lbl { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.err { color: var(--hl); font-size: 13px; min-height: 20px; margin-top: 6px; }
+.btn {
+  width: 100%; border: 0; border-radius: 8px; padding: 11px 14px; font: 600 15px inherit;
+  font-family: inherit; background: var(--ink); color: var(--panel); cursor: pointer;
+}
+.btn:hover { opacity: .9; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.roll-stage { display: flex; gap: 10px; justify-content: center; align-items: center; min-height: 72px; margin: 14px 0 6px; flex-wrap: wrap; }
+.roll-res { text-align: center; font-size: 14px; color: var(--muted); min-height: 22px; }
+.roll-res b { color: var(--ink); }
+
+/* Zar */
+.die {
+  --s: 28px; width: var(--s); height: var(--s); display: inline-grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  padding: calc(var(--s) * .14); background: var(--die); border: 1px solid #c9c4b8; border-radius: calc(var(--s) * .2);
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,.08); vertical-align: middle;
+}
+.die i { display: block; border-radius: 50%; margin: 14%; }
+.die i.p { background: var(--pip); }
+.die.big { --s: 58px; }
+.die.spin { animation: spin .45s ease-out; }
+@keyframes spin { from { transform: rotate(-200deg) scale(.6); opacity: .3; } to { transform: none; opacity: 1; } }
+
+/* KPI */
+.kpis { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.kpi { padding: 16px; }
+.kpi .v { font-family: "IBM Plex Mono", Consolas, monospace; font-size: 26px; font-weight: 600; line-height: 1.2; }
+.kpi .l { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.kpi.main { background: var(--hl-soft); border-color: transparent; }
+.kpi.main .v { color: var(--hl); }
+
+/* Grafik */
+.chart-wrap { position: relative; }
+svg.chart { width: 100%; height: auto; display: block; }
+svg.chart text { font-family: "IBM Plex Mono", Consolas, monospace; font-size: 11px; fill: var(--muted); }
+svg.chart .bar { fill: var(--bar); cursor: pointer; transition: fill .15s; }
+svg.chart .bar:hover { fill: var(--accent); }
+svg.chart .bar.sel { fill: var(--hl); }
+svg.chart .gl { stroke: var(--grid); }
+svg.chart .ax { stroke: var(--line); }
+svg.chart .curve { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 3; opacity: .6; }
+svg.chart .emp { fill: var(--ok); }
+svg.chart .tail { fill: var(--hl); opacity: .12; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -2px; background: var(--c); }
+.legend .dash::before { height: 0; border-top: 2px dashed var(--ink); border-radius: 0; vertical-align: 3px; background: none; }
+.legend .dot::before { border-radius: 50%; width: 9px; height: 9px; }
+.tip {
+  position: absolute; pointer-events: none; background: var(--ink); color: var(--panel); padding: 6px 10px; border-radius: 6px;
+  font: 12px "IBM Plex Mono", Consolas, monospace; white-space: nowrap; transform: translate(-50%, -110%); opacity: 0; transition: opacity .1s;
+}
+
+/* Formula */
+.formula {
+  font-family: "IBM Plex Serif", Georgia, serif; font-style: italic; font-size: 17px; text-align: center;
+  padding: 14px; background: var(--accent-soft); border-radius: 8px; margin-bottom: 14px; overflow-x: auto;
+}
+.steps { width: 100%; border-collapse: collapse; font-size: 14px; }
+.steps td, .steps th { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.steps th { font-size: 12px; color: var(--muted); font-weight: 500; }
+.steps td.n { text-align: right; font-family: "IBM Plex Mono", Consolas, monospace; }
+.steps tr.total td { border-bottom: 0; font-weight: 700; }
+.note { font-size: 13px; color: var(--muted); margin: 12px 0 0; }
+.note b { color: var(--ink); }
+
+/* Multitoplam */
+.ms { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.ms:last-child { border-bottom: 0; }
+.ms .dice { display: flex; gap: 4px; }
+.ms .eq { font-family: "IBM Plex Mono", Consolas, monospace; font-size: 13px; color: var(--muted); flex: 1; min-width: 110px; }
+.ms .perm { font-family: "IBM Plex Mono", Consolas, monospace; font-weight: 600; background: var(--accent-soft); color: var(--accent); padding: 2px 8px; border-radius: 99px; font-size: 13px; }
+.mbar { height: 4px; background: var(--accent); border-radius: 2px; margin-top: 2px; }
+
+/* Tartiblangan */
+.combos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.combo { display: flex; align-items: center; gap: 6px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.combo .i { font: 11px "IBM Plex Mono", Consolas, monospace; color: var(--muted); width: 26px; }
+.combo .die { --s: 22px; }
+
+/* Jadval */
+.tbl-wrap { overflow-x: auto; }
+table.dist { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.dist th, table.dist td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+table.dist th { color: var(--muted); font-weight: 500; font-size: 12px; position: sticky; top: 0; background: var(--panel); }
+table.dist td:first-child, table.dist th:first-child { text-align: center; }
+table.dist tr { cursor: pointer; }
+table.dist tr:hover td { background: var(--accent-soft); }
+table.dist tr.sel td { background: var(--hl-soft); font-weight: 600; }
+.mini { display: inline-block; height: 8px; background: var(--bar); border-radius: 2px; vertical-align: middle; }
+tr.sel .mini { background: var(--hl); }
+
+.stats dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0; font-size: 14px; }
+.stats dt { color: var(--muted); }
+.stats dd { margin: 0; font-family: "IBM Plex Mono", Consolas, monospace; }
+.simrow { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.simrow .btn { width: auto; flex: 1; min-width: 110px; }
+footer { margin-top: 36px; color: var(--muted); font-size: 12px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Kombinatorika · Ehtimollar nazariyasi</div>
+  <h1>Zar yig'indisi laboratoriyasi</h1>
+  <p class="lede">Bir nechta olti yoqli zar tashlanganda berilgan yig'indi necha xil usulda hosil bo'lishi, uning ehtimolligi
+  va tarkibiy kombinatsiyalari. Natijalar to'liq sanash, inklyuziya-ekskluziya formulasi va Monte-Karlo simulyatsiyasi bilan tekshiriladi.</p>
+</header>
+
+<div class="grid top">
+  <!-- Boshqaruv paneli -->
+  <div class="card">
+    <h2>Parametrlar</h2>
+    <div class="field">
+      <label>Zarlar soni (n)</label>
+      <div class="seg" id="nSeg"></div>
+    </div>
+    <div class="field">
+      <label for="sumNum">Yig'indi (S)</label>
+      <div class="sumrow">
+        <input type="number" id="sumNum" class="mono">
+        <input type="range" id="sumRange">
+      </div>
+      <div class="range-lbl"><span id="minLbl"></span><span id="maxLbl"></span></div>
+      <div class="err" id="err"></div>
+    </div>
+    <button class="btn" id="rollBtn">Zarlarni tashlash</button>
+    <div class="roll-stage" id="stage"></div>
+    <div class="roll-res" id="rollRes">Tasodifiy tashlashni sinab ko'ring</div>
+  </div>
+
+  <!-- Natija -->
+  <div>
+    <div class="grid kpis">
+      <div class="card kpi main"><div class="v" id="kPct">—</div><div class="l">Tushish ehtimolligi</div></div>
+      <div class="card kpi"><div class="v" id="kCnt">—</div><div class="l">Tartiblangan kombinatsiyalar</div></div>
+      <div class="card kpi"><div class="v" id="kFrac">—</div><div class="l">Kasr ko'rinishi</div></div>
+      <div class="card kpi"><div class="v" id="kOdds">—</div><div class="l">Imkoniyatlar nisbati (odds)</div></div>
+      <div class="card kpi"><div class="v" id="kLe">—</div><div class="l" id="kLeL">P(S ≤ s)</div></div>
+      <div class="card kpi"><div class="v" id="kGe">—</div><div class="l" id="kGeL">P(S ≥ s)</div></div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h2 id="chartTitle">Yig'indilar taqsimoti</h2>
+      <div class="chart-wrap" id="chartWrap">
+        <svg class="chart" id="chart" viewBox="0 0 760 300" role="img" aria-label="Yig'indilar ehtimollik taqsimoti"></svg>
+        <div class="tip" id="tip"></div>
+      </div>
+      <div class="legend">
+        <span style="--c:var(--bar)">Nazariy ehtimollik</span>
+        <span style="--c:var(--hl)">Tanlangan yig'indi</span>
+        <span class="dash">Normal yaqinlashish N(μ, σ²)</span>
+        <span class="dot" style="--c:var(--ok)">Simulyatsiya (empirik)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="grid two">
+  <div class="card">
+    <h2>Analitik formula</h2>
+    <div class="formula">N(S) = Σ<sub>k</sub> (−1)<sup>k</sup> · C(n, k) · C(S − 6k − 1, n − 1)</div>
+    <table class="steps" id="steps"></table>
+    <p class="note" id="gfNote"></p>
+  </div>
+  <div class="card">
+    <h2 id="msTitle">Tartibsiz kombinatsiyalar</h2>
+    <div id="msList"></div>
+    <p class="note" id="msNote"></p>
+  </div>
+</section>
+
+<section class="card">
+  <h2 id="ordTitle">Barcha tartiblangan kombinatsiyalar</h2>
+  <div class="combos" id="combos"></div>
+</section>
+
+<section class="grid two">
+  <div class="card stats">
+    <h2>Taqsimot xarakteristikalari</h2>
+    <dl id="stats"></dl>
+    <p class="note">Bitta zar uchun E = 3.5, D = 35/12. Zarlar bog'liq emas, shuning uchun yig'indining kutilmasi
+    va dispersiyasi n marta ortadi. Taqsimot μ ga nisbatan simmetrik: <b>N(S) = N(7n − S)</b>.</p>
+  </div>
+  <div class="card stats">
+    <h2>Monte-Karlo simulyatsiyasi</h2>
+    <div class="simrow">
+      <button class="btn ghost" data-sim="1000">1 000</button>
+      <button class="btn ghost" data-sim="10000">10 000</button>
+      <button class="btn ghost" data-sim="100000">100 000</button>
+      <button class="btn ghost" data-sim="1000000">1 000 000</button>
+    </div>
+    <dl id="sim"><dt>Holat</dt><dd>Tajribalar sonini tanlang</dd></dl>
+    <p class="note">Katta sonlar qonuniga ko'ra tajribalar soni ortgan sari empirik chastota nazariy ehtimollikka yaqinlashadi.
+    χ² statistikasi butun taqsimotning mosligini baholaydi.</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>To'liq taqsimot jadvali</h2>
+  <div class="tbl-wrap"><table class="dist" id="dist"></table></div>
+</section>
+
+<footer>Zar yig'indisi laboratoriyasi · kombinatorik tahlil · main.py bilan birga ishlatiladi</footer>
+</div>
+
+<script>
+const F = 6;
+const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+const $ = id => document.getElementById(id);
+const state = { n: 3, s: 10, sim: null };
+
+function die(v, cls = "") {
+  let h = `<span class="die ${cls}" title="${v}">`;
+  for (let i = 0; i < 9; i++) h += `<i class="${PIPS[v].includes(i) ? "p" : ""}"></i>`;
+  return h + "</span>";
+}
+
+function binom(n, k) {
+  if (k < 0 || k > n) return 0;
+  let r = 1;
+  for (let i = 1; i <= k; i++) r = r * (n - k + i) / i;
+  return Math.round(r);
+}
+function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+function fmtPct(p, d = 2) { return (p * 100).toFixed(d) + "%"; }
+function fmtInt(x) { return x.toLocaleString("ru-RU"); }
+
+// Dinamik dasturlash: n ta zar yig'indisi taqsimoti
+function distribution(n) {
+  let d = [1];
+  for (let i = 0; i < n; i++) {
+    const nd = new Array(d.length + F).fill(0);
+    d.forEach((c, s) => { for (let f = 1; f <= F; f++) nd[s + f] += c; });
+    d = nd;
+  }
+  return d; // d[s] = kombinatsiyalar soni
+}
+
+function ordered(n, s) {
+  const out = [], cur = [];
+  (function rec(left, rem) {
+    if (left === 0) { if (rem === 0) out.push(cur.slice()); return; }
+    for (let f = 1; f <= F; f++) {
+      if (rem - f < left - 1 || rem - f > (left - 1) * F) continue;
+      cur.push(f); rec(left - 1, rem - f); cur.pop();
+    }
+  })(n, s);
+  return out;
+}
+
+function multisets(n, s) {
+  const out = [], cur = [];
+  (function rec(start, left, rem) {
+    if (left === 0) { if (rem === 0) out.push(cur.slice()); return; }
+    for (let f = start; f <= F; f++) {
+      if (rem - f < (left - 1) * f) break;
+      cur.push(f); rec(f, left - 1, rem - f); cur.pop();
+    }
+  })(1, n, s);
+  return out;
+}
+
+function fact(k) { let r = 1; for (let i = 2; i <= k; i++) r *= i; return r; }
+function perms(ms) {
+  const c = {}; ms.forEach(v => c[v] = (c[v] || 0) + 1);
+  return Object.values(c).reduce((r, k) => r / fact(k), fact(ms.length));
+}
+
+/* ---------- Boshqaruv ---------- */
+function buildSeg() {
+  $("nSeg").innerHTML = [2, 3, 4, 5].map(k => `<button data-n="${k}" class="${k === state.n ? "on" : ""}">${k}</button>`).join("");
+}
+$("nSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const old = state.n;
+  state.n = +b.dataset.n;
+  state.s = Math.round(state.s / old * state.n);
+  state.sim = null;
+  buildSeg(); render();
+});
+$("sumNum").addEventListener("input", e => {
+  const v = parseInt(e.target.value, 10);
+  const min = state.n, max = F * state.n;
+  if (isNaN(v)) { $("err").textContent = "Butun son kiriting"; return; }
+  if (v < min || v > max) {
+    $("err").textContent = `${state.n} ta zar yig'indisi ${min}–${max} oralig'ida. P(${v}) = 0`;
+    return;
+  }
+  $("err").textContent = "";
+  state.s = v; render(false);
+});
+$("sumRange").addEventListener("input", e => { state.s = +e.target.value; $("err").textContent = ""; render(); });
+
+$("rollBtn").addEventListener("click", () => {
+  const r = Array.from({ length: state.n }, () => 1 + Math.floor(Math.random() * F));
+  const total = r.reduce((a, b) => a + b, 0);
+  $("stage").innerHTML = r.map(v => die(v, "big spin")).join("");
+  const hit = total === state.s;
+  $("rollRes").innerHTML = `Yig'indi: <b>${total}</b> — ` +
+    (hit ? `<b style="color:var(--ok)">tanlangan ${state.s} tushdi!</b>` : `tanlangan ${state.s} emas`);
+});
+
+/* ---------- Grafik ---------- */
+function drawChart(d, total) {
+  const n = state.n, min = n, max = F * n;
+  const W = 760, H = 300, L = 48, R = 12, T = 14, B = 36;
+  const cw = W - L - R, ch = H - T - B;
+  const k = max - min + 1, bw = cw / k;
+  const probs = []; for (let s = min; s <= max; s++) probs.push(d[s] / total);
+  let pmax = Math.max(...probs);
+  if (state.sim) pmax = Math.max(pmax, ...state.sim.freq.slice(min, max + 1).map(c => c / state.sim.N));
+  const step = pmax > .1 ? .02 : pmax > .05 ? .01 : .005;
+  const top = Math.ceil(pmax / step) * step;
+  const y = p => T + ch - p / top * ch;
+  const x = s => L + (s - min) * bw;
+  let g = "";
+  for (let v = 0; v <= top + 1e-9; v += step) {
+    g += `<line class="gl" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`;
+    g += `<text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${(v * 100).toFixed(step < .01 ? 1 : 0)}%</text>`;
+  }
+  g += `<rect class="tail" x="${x(min)}" y="${T}" width="${(state.s - min + 1) * bw}" height="${ch}"/>`;
+  const lblEvery = k > 20 ? 2 : 1;
+  for (let s = min; s <= max; s++) {
+    const p = d[s] / total, pad = Math.min(4, bw * .15);
+    g += `<rect class="bar ${s === state.s ? "sel" : ""}" data-s="${s}" x="${x(s) + pad}" y="${y(p)}" width="${bw - 2 * pad}" height="${T + ch - y(p)}" rx="2"/>`;
+    if ((s - min) % lblEvery === 0 || s === state.s)
+      g += `<text x="${x(s) + bw / 2}" y="${H - B + 16}" text-anchor="middle" ${s === state.s ? 'style="fill:var(--hl);font-weight:600"' : ""}>${s}</text>`;
+  }
+  // Normal yaqinlashish
+  const mu = 3.5 * n, sd = Math.sqrt(35 / 12 * n);
+  let path = "";
+  for (let t = min - .5; t <= max + .5; t += .1) {
+    const p = Math.exp(-((t - mu) ** 2) / (2 * sd * sd)) / (sd * Math.sqrt(2 * Math.PI));
+    path += (path ? "L" : "M") + (L + (t - min + .5) * bw).toFixed(1) + "," + y(p).toFixed(1);
+  }
+  g += `<path class="curve" d="${path}"/>`;
+  if (state.sim) {
+    for (let s = min; s <= max; s++)
+      g += `<circle class="emp" cx="${x(s) + bw / 2}" cy="${y(state.sim.freq[s] / state.sim.N)}" r="3.5"/>`;
+  }
+  g += `<line class="ax" x1="${L}" x2="${W - R}" y1="${T + ch}" y2="${T + ch}"/>`;
+  g += `<text x="${L + cw / 2}" y="${H - 2}" text-anchor="middle">Yig'indi S</text>`;
+  $("chart").innerHTML = g;
+}
+
+const tip = $("tip");
+$("chart").addEventListener("mousemove", e => {
+  const s = e.target.dataset && e.target.dataset.s;
+  if (!s) { tip.style.opacity = 0; return; }
+  const d = distribution(state.n), total = F ** state.n;
+  const r = $("chartWrap").getBoundingClientRect();
+  tip.style.left = (e.clientX - r.left) + "px";
+  tip.style.top = (e.clientY - r.top) + "px";
+  let t = `S=${s}: ${d[s]}/${total} = ${fmtPct(d[s] / total)}`;
+  if (state.sim) t += ` · emp ${fmtPct(state.sim.freq[s] / state.sim.N)}`;
+  tip.textContent = t; tip.style.opacity = 1;
+});
+$("chart").addEventListener("mouseleave", () => tip.style.opacity = 0);
+$("chart").addEventListener("click", e => { const s = e.target.dataset.s; if (s) { state.s = +s; render(); } });
+
+/* ---------- Asosiy chizish ---------- */
+function render(syncInput = true) {
+  const n = state.n, s = state.s, min = n, max = F * n, total = F ** n;
+  const d = distribution(n);
+  const cnt = d[s], p = cnt / total, g = gcd(cnt, total);
+
+  $("sumRange").min = min; $("sumRange").max = max; $("sumRange").value = s;
+  $("sumNum").min = min; $("sumNum").max = max;
+  if (syncInput) $("sumNum").value = s;
+  $("minLbl").textContent = `min = ${min} (hammasi 1)`;
+  $("maxLbl").textContent = `max = ${max} (hammasi 6)`;
+
+  let le = 0, ge = 0;
+  for (let k = min; k <= max; k++) { if (k <= s) le += d[k]; if (k >= s) ge += d[k]; }
+  $("kPct").textContent = fmtPct(p);
+  $("kCnt").textContent = fmtInt(cnt);
+  $("kFrac").textContent = `${cnt / g}/${total / g}`;
+  $("kOdds").textContent = `1 : ${((total - cnt) / cnt).toFixed(2)}`;
+  $("kLe").textContent = fmtPct(le / total); $("kLeL").textContent = `P(S ≤ ${s}) — ${le}/${total}`;
+  $("kGe").textContent = fmtPct(ge / total); $("kGeL").textContent = `P(S ≥ ${s}) — ${ge}/${total}`;
+  $("chartTitle").textContent = `${n} ta zar yig'indilari taqsimoti · jami 6^${n} = ${fmtInt(total)} natija`;
+
+  drawChart(d, total);
+
+  // Formula qadamlari
+  let rows = `<tr><th>k</th><th>Ifoda</th><th style="text-align:right">Qiymat</th></tr>`, sum = 0;
+  for (let k = 0; k <= n; k++) {
+    const m = s - F * k - 1;
+    if (m < n - 1) break;
+    const v = (k % 2 ? -1 : 1) * binom(n, k) * binom(m, n - 1);
+    sum += v;
+    rows += `<tr><td class="mono">${k}</td><td class="mono">${k % 2 ? "−" : "+"} C(${n},${k})·C(${m},${n - 1}) = ${k % 2 ? "−" : "+"}${binom(n, k)}·${binom(m, n - 1)}</td><td class="n">${v > 0 ? "+" : ""}${v}</td></tr>`;
+  }
+  rows += `<tr class="total"><td></td><td>N(${s})</td><td class="n">${sum}</td></tr>`;
+  $("steps").innerHTML = rows;
+  $("gfNote").innerHTML = `Hosil qiluvchi funksiya: <b>(x + x² + … + x⁶)<sup>${n}</sup></b> ko'phadida x<sup>${s}</sup> oldidagi koeffitsient = <b>${cnt}</b>. ` +
+    `Formula natijasi to'liq sanash bilan ${sum === cnt ? '<b style="color:var(--ok)">mos keladi ✓</b>' : "<b>mos emas</b>"}.`;
+
+  // Multitoplamlar
+  const ms = multisets(n, s);
+  const pmax = Math.max(...ms.map(perms));
+  $("msTitle").textContent = `Tartibsiz kombinatsiyalar · ${ms.length} ta`;
+  $("msList").innerHTML = ms.map(m => {
+    const k = perms(m);
+    return `<div class="ms"><div class="dice">${m.map(v => die(v)).join("")}</div>
+      <div class="eq">${m.join(" + ")} = ${s}<div class="mbar" style="width:${k / pmax * 100}%"></div></div>
+      <span class="perm">${k} ta</span></div>`;
+  }).join("");
+  $("msNote").innerHTML = `Har bir tartibsiz to'plam n!/(a!·b!·…) ta tartiblangan ko'rinish beradi. ` +
+    `Jami: <b>${ms.map(perms).join(" + ")} = ${cnt}</b>. Masalan, uchala son har xil bo'lsa 3! = 6, ikkitasi teng bo'lsa 3, hammasi teng bo'lsa 1.`;
+
+  // Tartiblangan
+  const ord = ordered(n, s);
+  $("ordTitle").textContent = `Barcha tartiblangan kombinatsiyalar · ${ord.length} ta`;
+  $("combos").innerHTML = ord.map((c, i) => `<div class="combo"><span class="i">${i + 1}</span>${c.map(v => die(v)).join("")}</div>`).join("");
+
+  // Statistikalar
+  const mu = 3.5 * n, vr = 35 / 12 * n, sd = Math.sqrt(vr);
+  const modes = []; const dm = Math.max(...d.slice(min, max + 1));
+  for (let k = min; k <= max; k++) if (d[k] === dm) modes.push(k);
+  const z = (s - mu) / sd;
+  $("stats").innerHTML = `
+    <dt>Qiymatlar sohasi</dt><dd>${min} … ${max} (${max - min + 1} ta yig'indi)</dd>
+    <dt>Jami natijalar</dt><dd>6^${n} = ${fmtInt(total)}</dd>
+    <dt>Kutilma E[S]</dt><dd>μ = 3.5·${n} = ${mu}</dd>
+    <dt>Dispersiya D[S]</dt><dd>35/12·${n} = ${vr.toFixed(4)}</dd>
+    <dt>Standart chetlanish</dt><dd>σ = ${sd.toFixed(4)}</dd>
+    <dt>Moda</dt><dd>${modes.join(", ")} (${dm} ta, ${fmtPct(dm / total)})</dd>
+    <dt>Simmetrik juft</dt><dd>N(${s}) = N(${7 * n - s}) = ${cnt}</dd>
+    <dt>Standart ball z</dt><dd>(${s} − ${mu}) / ${sd.toFixed(3)} = ${z.toFixed(3)}</dd>`;
+
+  renderSim(d, total);
+
+  // Jadval
+  let t = `<tr><th>S</th><th>Soni</th><th>P (kasr)</th><th>P</th><th>P(≤S)</th><th>P(≥S)</th><th style="text-align:left">Grafik</th></tr>`;
+  let cum = 0;
+  for (let k = min; k <= max; k++) {
+    cum += d[k];
+    const gg = gcd(d[k], total);
+    t += `<tr data-s="${k}" class="${k === s ? "sel" : ""}"><td class="mono">${k}</td><td class="mono">${d[k]}</td>
+      <td class="mono">${d[k] / gg}/${total / gg}</td><td class="mono">${fmtPct(d[k] / total)}</td>
+      <td class="mono">${fmtPct(cum / total)}</td><td class="mono">${fmtPct((total - cum + d[k]) / total)}</td>
+      <td style="text-align:left"><span class="mini" style="width:${d[k] / dm * 120}px"></span></td></tr>`;
+  }
+  $("dist").innerHTML = t;
+}
+$("dist").addEventListener("click", e => { const tr = e.target.closest("tr[data-s]"); if (tr) { state.s = +tr.dataset.s; render(); } });
+
+/* ---------- Simulyatsiya ---------- */
+document.querySelectorAll("[data-sim]").forEach(b => b.addEventListener("click", () => {
+  const N = +b.dataset.sim, n = state.n, freq = new Array(F * n + 1).fill(0);
+  for (let i = 0; i < N; i++) {
+    let t = 0;
+    for (let j = 0; j < n; j++) t += 1 + Math.floor(Math.random() * F);
+    freq[t]++;
+  }
+  state.sim = { N, freq, n };
+  render();
+}));
+
+function renderSim(d, total) {
+  const sim = state.sim;
+  if (!sim || sim.n !== state.n) { $("sim").innerHTML = "<dt>Holat</dt><dd>Tajribalar sonini tanlang</dd>"; return; }
+  const n = state.n, s = state.s, emp = sim.freq[s] / sim.N, th = d[s] / total;
+  let chi = 0;
+  for (let k = n; k <= F * n; k++) {
+    const e = sim.N * d[k] / total;
+    chi += (sim.freq[k] - e) ** 2 / e;
+  }
+  const df = 5 * n;
+  const se = Math.sqrt(th * (1 - th) / sim.N);
+  $("sim").innerHTML = `
+    <dt>Tajribalar</dt><dd>${fmtInt(sim.N)}</dd>
+    <dt>S = ${s} tushdi</dt><dd>${fmtInt(sim.freq[s])} marta</dd>
+    <dt>Empirik chastota</dt><dd>${fmtPct(emp, 3)}</dd>
+    <dt>Nazariy ehtimollik</dt><dd>${fmtPct(th, 3)}</dd>
+    <dt>Absolyut farq</dt><dd>${fmtPct(Math.abs(emp - th), 3)} (${(Math.abs(emp - th) / se).toFixed(2)}σ)</dd>
+    <dt>95% ishonch oralig'i</dt><dd>${fmtPct(Math.max(0, th - 1.96 * se), 3)} … ${fmtPct(th + 1.96 * se, 3)}</dd>
+    <dt>χ² (erkinlik ${df})</dt><dd>${chi.toFixed(2)} ${chi < df + 2 * Math.sqrt(2 * df) ? '<span style="color:var(--ok)">— mos</span>' : "— chetlanish katta"}</dd>`;
+}
+
+buildSeg();
+render();
+$("stage").innerHTML = [3, 3, 4].map(v => die(v, "big")).join("");
+</script>
+</body>
+</html>
